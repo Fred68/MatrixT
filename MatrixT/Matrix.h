@@ -1225,29 +1225,29 @@ namespace matrix
 			private:
 				Matrix<DATA> a;				// Matrice fattorizzata
 				Matrix<int> pivot;			// Vettore di pivot
-				const MOD EPS = std::numeric_limits<MOD>::epsilon();
-				//const MOD MINV = std::numeric_limits<MOD>::min();		// Errori di compilazione, probabilm. rif. ambiguo (occhio ai namespace).
-				//const MOD MAXV = std::numeric_limits<MOD>::max();
 
 				MOD _epszero;				// Valore minimo considerato > 0
 				MOD _det;					// Determinante
+				MOD _max;					// Valore massimo				
 
 			public:
 
 				/* Ctor. Vincolo nel costruttore, non serve altrove */
 				LinearSys() requires RQfloatabs<DATA, MOD>
 					{
-					_epszero = EPS;
+					_epszero = std::numeric_limits<MOD>::epsilon();
 					_det = (MOD)0;
+					_max = std::numeric_limits<MOD>::max();
+
 					#ifdef _DEBUG		
-					cout << "LinearSys(): epsilon=" << EPS << endl;
+					cout << "LinearSys():"  << endl << "epsilon=" << _epszero << endl << "max=" << _max << endl;
 					#endif
 					}
 
 				/* Soglia sotto la quale un valore si considera nullo */
 				void set_eps_zero(MOD eps_zero)
 					{
-					if (eps_zero > EPS)
+					if (eps_zero > std::numeric_limits<MOD>::epsilon())
 						{
 						_epszero = eps_zero;
 						}
@@ -1256,7 +1256,7 @@ namespace matrix
 					{
 					if (eps_zero >= (MOD)1)
 						{
-						_epszero = eps_zero * EPS;
+						_epszero = eps_zero * std::numeric_limits<MOD>::epsilon();
 						}
 					}
 				MOD get_eps_zero()
@@ -1269,6 +1269,7 @@ namespace matrix
 					{
 					stringstream ss;
 					ss << "Eps_zero=" << _epszero << endl;
+					ss << "max=" << _max << endl;
 					ss << "Det=" << _det << endl;
 					ss << "PLU=" << a.to_string() << endl;
 					ss << "Pivot=" << pivot.to_string() << endl;

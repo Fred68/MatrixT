@@ -245,11 +245,13 @@ int main()
 		LinearSys<double, double> *ls2 = new LinearSys<double, double>();
 		LinearSys<complex<float>, float> *ls3 = new LinearSys<complex<float>, float>();
 		LinearSys<complex<double>, double> *ls4 = new LinearSys<complex<double>, double>();
+		LinearSys<complex<long double>, long double> *ls5 = new LinearSys<complex<long double>, long double>();
 		ls4->set_eps_zero_ratio(10);
 		cout << "\nls1->to_string:\n" << ls1->to_string() << endl;
 		cout << "\nls2->to_string:\n" << ls2->to_string() << endl;
 		cout << "\nls3->to_string:\n" << ls3->to_string() << endl;
 		cout << "\nls4->to_string:\n" << ls4->to_string() << endl;
+		cout << "\nls5->to_string:\n" << ls5->to_string() << endl;
 
 		// LinearSys<float,string> *ls2 = new LinearSys<float, string>();	// Error C7500: nessuna funzione soddisfa i vincoli
 
