@@ -1,9 +1,13 @@
 
 
 #include "Pippo.h"
+
 #include "Matrix.h"
 
 #include <iostream>
+
+
+//import Matrix;
 
 //#include <math.h>
 //#include <complex.h>
@@ -144,7 +148,7 @@ int main()
 			for (j = 0; j < m.cols(); j++)
 				m(i, j) = rand() % 1000;
 		pair<int, int> imin = m.min_row_col();
-		cout << "m=\n" << m.to_string() << endl << "min= " << m.min() << " @ " << '[' << imin.first << ',' << imin.second << ']' << endl;
+		cout << "m=\n" << m.to_string() << endl << "min= " << m.min_value() << " @ " << '[' << imin.first << ',' << imin.second << ']' << endl;
 
 		#if false
 		imin = P3.min();		// Vincolo non soddisfatto
@@ -230,9 +234,9 @@ int main()
 
 		Matrix<float> mset1;
 		// mset1.set(2, 2,{{10,20},{-3,-4}});
-		mset1.set(2, 2, { 10.0f,20.0f,
-											-3.0f,-4.0f
-			});
+		mset1.set(2, 2, {	10.0f,	20.0f,
+							-3.0f,	-4.0f
+						});
 		cout << "\nmset1.to_string:\n" << mset1.to_string() << endl;
 
 		// mset1.set(2, 2, { 10,20,-3,-4,5});	// Error, sizes do not match
@@ -254,10 +258,10 @@ int main()
 		Matrix<double> A, xo, b, x;
 
 
-		A.set(3, 3, { 1, 2, 3,
+		A.set(3, 3, {	1, 2, 3,
 						-2, 4, -7,
 						5, 6, 1 });
-		xo.set(3, 1, { 1, -5, 8 });
+		xo.set(3, 1, {	1, -5, 8 });
 
 
 		/*

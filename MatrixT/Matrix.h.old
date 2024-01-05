@@ -95,6 +95,7 @@ namespace matrix
 			inline static const string ERR_SINGULAR = "Singular";
 			inline static const string ERR_PIVOT = "Wrong pivot";
 	};
+	
 	template<class DATA> class MatrixIterator
 		{
 		private:
@@ -153,7 +154,8 @@ namespace matrix
 				return _m->dat + ir * _m->_col + ic;
 				}
 		};
-		
+
+
 	template<class DATA> class Matrix
 		{
 		private:
@@ -882,7 +884,7 @@ namespace matrix
 				}
 			DATA &min_value() requires RQorder<DATA>
 				{
-				pair<int,int> i = min_row_col();	// Occasionale errore su funzione min() ?
+				pair<int,int> i = min_row_col();
 				return (*this)(i.first, i.second);
 				}
 			DATA &max_value() requires RQorder<DATA>
@@ -1228,10 +1230,8 @@ namespace matrix
 				const MOD EPS = std::numeric_limits<MOD>::epsilon();
 				//const MOD MINV = std::numeric_limits<MOD>::min();		// Errori di compilazione, probabilm. rif. ambiguo (occhio ai namespace).
 				//const MOD MAXV = std::numeric_limits<MOD>::max();
-
 				MOD _epszero;				// Valore minimo considerato > 0
 				MOD _det;					// Determinante
-
 			public:
 
 				/* Ctor. Vincolo nel costruttore, non serve altrove */
