@@ -47,35 +47,35 @@ namespace matrix
 	#pragma region PROTOTYPING
 
 	class MatrixDef;
-	template<typename DATA> class Matrix;
-	template<typename DATA> class MatrixIterator;	/* Prototyping della classe generica che deve essere friend */
+	template<class DATA> class Matrix;
+	template<class DATA> class MatrixIterator;	/* Prototyping della classe generica che deve essere friend */
 
 	#pragma endregion
 
 	#pragma region CONCEPTS
 
 	/* Assegnazione semplice */
-	template<typename T>
+	template<class T>
 	concept RQassign = requires (T x, T y) { x = y; };
 
 	/* Assegnazione e ordinamento*/
-	template<typename T>
+	template<class T>
 	concept RQorder = RQassign<T> && std::totally_ordered<T>;
 
 	/* Somma (valida anche per stringhe) */
-	template<typename T>
+	template<class T>
 	concept RQsum = RQassign<T> && requires (T x, T y) { x += y; x + y; };
 
 	/* Somma, differerenza, prodotto */
-	template<typename T>
+	template<class T>
 	concept RQsumdifprod = RQsum<T> && requires (T x, T y) { x -= y; x - y; x *= y; x * y; };
 
 	/* Per tutti i numeri a virgola mobile o complessi */
-	template<typename T>
+	template<class T>
 	concept RQfloat = RQsumdifprod<T> && (std::is_floating_point<T>::value || std::is_same_v<T, std::complex<typename T::value_type>>);
 
 	/* Per tutti i numeri a virgola mobile o complessi con funzione abs()*/
-	template<typename T, class A>
+	template<class T, class A>
 	concept RQfloatabs = RQfloat<T> && RQfloat<A> && requires (T x, A a) { a = abs(x); };
 
 	#pragma endregion
@@ -95,10 +95,7 @@ namespace matrix
 			inline static const string ERR_SINGULAR = "Singular";
 			inline static const string ERR_PIVOT = "Wrong pivot";
 	};
-
-	/********************************************************/
-	// PARTE DA RIVEDERE SECONDO GLI STANDARD
-	template<typename DATA> class MatrixIterator
+	template<class DATA> class MatrixIterator
 		{
 		private:
 			Matrix<DATA> *_m;
@@ -157,7 +154,7 @@ namespace matrix
 				}
 		};
 		
-	template<typename DATA> class Matrix
+	template<class DATA> class Matrix
 		{
 		private:
 			int _row;							// Numeri di righe...
@@ -170,211 +167,141 @@ namespace matrix
 		public:
 			/* Ctor */
 			Matrix()
-			{
+				{
 				_row = _col = 0;
 				dat = (DATA*)nullptr;
 				_iterators = 0;
-#ifdef _DEBUG
+				#ifdef _DEBUG
 				cout << "Matrix()" << endl;
-#endif
-			}
+				#endif
+				}
 			Matrix(int rows, int cols)
-			{
-				if ((rows > 0) && (cols > 0))
 				{
+				if ((rows > 0) && (cols > 0))
+					{
 					_row = rows;
 					_col = cols;
 					dat = new DATA[rows * cols];
 					if (!dat)							// Se fallita allocazione, esce con errore
-					{
+						{
 						_row = _col = 0;
 						throw std::runtime_error(MatrixDef::ERR_ALLOC);
-					}
-				}
-				else
-				{									// Matrice vuota
+						}
+					} else
+					{									// Matrice vuota
 					_row = _col = 0;
 					dat = (DATA*)nullptr;
+					}
+					_iterators = 0;
+					#ifdef _DEBUG
+					cout << "Matrix(int rows, int cols)" << endl;
+					#endif
 				}
-				_iterators = 0;
-#ifdef _DEBUG
-				cout << "Matrix(int rows, int cols)" << endl;
-#endif
-			}
 			Matrix(int rows, int cols, DATA d) requires RQassign<DATA>
-			{
-#pragma warning (disable : 6385)
-				if ((rows > 0) && (cols > 0))
 				{
+				#pragma warning (disable : 6385)
+				if ((rows > 0) && (cols > 0))
+					{
 					_row = rows;
 					_col = cols;
 					dat = new DATA[rows * cols];
-					if (!dat)
-					{
+					if (!dat)							// Se fallita allocazione, esce con errore
+						{
 						_row = _col = 0;
 						throw std::runtime_error(MatrixDef::ERR_ALLOC);
-					}
-					else
-					{
+						} else
+						{
 						int ir, ic;
 						for (ir = 0; ir < _row; ir++)
 							for (ic = 0; ic < _col; ic++)
 								dat[ir * _col + ic] = d;
-					}
-				}
-				else
-				{									// Matrice vuota
+						}
+					} else
+					{									// Matrice vuota
 					_row = _col = 0;
 					dat = (DATA*)nullptr;
+					}
+					_iterators = 0;
+					#ifdef _DEBUG
+					cout << "Matrix(int rows, int cols, DATA d)" << endl;
+					#endif
+					#pragma warning (default : 6385)
 				}
-				_iterators = 0;
-#ifdef _DEBUG
-				cout << "Matrix(int rows, int cols, DATA d)" << endl;
-#endif
-#pragma warning (default : 6385)
-			}
 			Matrix(int rows, int cols, DATA(*pf)(int r, int c)) requires RQassign<DATA>
-			{
-				if ((rows > 0) && (cols > 0))
 				{
+				if ((rows > 0) && (cols > 0))
+					{
 					_row = rows;
 					_col = cols;
 					dat = new DATA[rows * cols];
-					if (!dat)
-					{
+					if (!dat)							// Se fallita allocazione, esce con errore
+						{
 						_row = _col = 0;
 						throw std::runtime_error(MatrixDef::ERR_ALLOC);
-					}
-					else
-					{
+						} else
+						{
 						int ir, ic;
 						for (ir = 0; ir < _row; ir++)
 							for (ic = 0; ic < _col; ic++)
 								dat[ir * _col + ic] = (*pf)(ir, ic);
-					}
-				}
-				else
-				{									// Matrice vuota
+						}
+					} else
+					{									// Matrice vuota
 					_row = _col = 0;
 					dat = (DATA*)nullptr;
+					}
+					_iterators = 0;
+					#ifdef _DEBUG
+					cout << "Matrix(int rows, int cols, DATA d)" << endl;
+					#endif
 				}
-				_iterators = 0;
-#ifdef _DEBUG
-				cout << "Matrix(int rows, int cols, DATA d)" << endl;
-#endif
-			}
 			/* Copy ctor */
-			Matrix(const Matrix& m) requires RQassign<DATA> : _row{m._row}, _col{m._col}, _iterators{0}
-			{
-				if ((_row > 0) && (_col > 0))
+			Matrix(const Matrix& m) requires RQassign<DATA>
 				{
-					dat = new DATA[_row * _col];
-					if (dat)
+				_row = m._row;							// Copia le dimensioni
+				_col = m._col;
+				if ((_row > 0) && (_col > 0))
 					{
+					dat = new DATA[_row * _col];		// Alloca nuovi dati
+					if (dat)							// Ricopia il contenuto
+						{
 						int ir, ic;							// Non usa memcpy((void*)dat, (void*)m.dat, row * col * sizeof(DATA)); ma '='.
 						for (ir = 0; ir < _row; ir++)		// Ricopia i valori. Usa operatore di assegnazione.
 							for (ic = 0; ic < _col; ic++)
 								dat[ir * _col + ic] = m.dat[ir * _col + ic];
-					}
-					else
-					{
+						} else
+						{								// Fallita allocazione
 						_row = _col = 0;
 						throw std::runtime_error(MatrixDef::ERR_ALLOC);
-					}
-				}
-				else
-				{
+						}
+					} else
+					{									// Matrice vuota
 					_row = _col = 0;
 					dat = (DATA*)nullptr;
-				}
-				
-#ifdef _DEBUG
-				cout << "Matrix(const Matrix& m)" << endl;
-#endif
-			}
-			/* Move ctor */
-			Matrix(Matrix&& m) : _row{m._row}, _col{m._col}, dat{m.dat}, _iterators{0}
-			{
-				m.dat = nullptr;
-				m._row = m._col = 0;
-				m._iterators = 0;
-#ifdef _DEBUG
-				cout << "Matrix(Matrix&& m)" << endl;
-#endif
-			}
-			// Copy assignment
-			Matrix<DATA> &operator=(const Matrix<DATA> &m) requires RQassign<DATA>
-			{
-				if (this != &m)
-				{
-					DATA *tmp;
-					_row = m._row;
-					_col = m._col;
-					if ((_row > 0) && (_col > 0))
-					{
-						tmp = new DATA[_row * _col];
-						if (tmp)
-						{
-							int ir, ic;							// Non usa memcpy((void*)dat, (void*)m.dat, row * col * sizeof(DATA)); ma '='.
-							for (ir = 0; ir < _row; ir++)		// Ricopia i valori. Usa operatore di assegnazione.
-								for (ic = 0; ic < _col; ic++)
-									tmp[ir * _col + ic] = m.dat[ir * _col + ic];
-							delete[] dat;
-							dat = tmp;
-						}
-						else
-						{
-							_row = _col = 0;
-							throw std::runtime_error(MatrixDef::ERR_ALLOC);
-						}
 					}
-					else
-					{									// Matrice vuota
-						_row = _col = 0;
-						dat = (DATA*)nullptr;
-					}
+					_iterators = 0;
+					#ifdef _DEBUG
+					cout << "Matrix(const Matrix& m)" << endl;
+					#endif
 				}
-#ifdef _DEBUG
-				cout << "Matrix::&operator=(const Matrix&)" << endl;
-#endif
-				return *this;
-			}
-			/* Move assignment */
-			Matrix<DATA> &operator=(Matrix<DATA> &&m)
-			{
-				if(this != &m)
-				{
-					_col = m._col;
-					_row = m._row;
-					_iterators = m-_iterators;
-					dat = m.dat;
-					m.dat = nullptr;
-					m._row = m._col = 0;
-					m._iterators = 0;
-				}
-#ifdef _DEBUG
-				cout << "Matrix::&operator=(Matrix&&)" << endl;
-#endif
-				return *this;
-			}
 			/* Dtor */
 			~Matrix()
-			{
+				{
 				if (dat != (DATA*)nullptr)
-				{
+					{
 					delete[] dat;
-				}
+					}
 				if (_iterators > 0)
-				{
+					{
 					// throw std::runtime_error(MatrixDef::ERR_ALLOC);	// Non interrompere un distruttore.
-#ifdef _DEBUG
+					#ifdef _DEBUG
 					cout << "~Matrix() with pending " << _iterators << " iterators." << endl;
-#endif
-				}
-#ifdef _DEBUG
+					#endif
+					}
+				#ifdef _DEBUG
 				cout << "~Matrix()" << endl;
-#endif
-			}
+				#endif
+				}
 			// Accesso in lettura
 			int rows()
 				{
@@ -542,6 +469,41 @@ namespace matrix
 				cout << "void Matrix::set(int rows, int cols, const std::vector<DATA>& array)" << endl;
 				#endif
 				return;
+				}
+			// Assegnazione
+			Matrix<DATA> &operator=(const Matrix<DATA> &m) requires RQassign<DATA>
+				{
+				if (this != &m)
+					{
+					DATA *tmp;
+					_row = m._row;
+					_col = m._col;
+					if ((_row > 0) && (_col > 0))
+						{
+						tmp = new DATA[_row * _col];		// Alloca nuovi dati
+						if (tmp)							// Ricopia il contenuto
+							{
+							int ir, ic;							// Non usa memcpy((void*)dat, (void*)m.dat, row * col * sizeof(DATA)); ma '='.
+							for (ir = 0; ir < _row; ir++)		// Ricopia i valori. Usa operatore di assegnazione.
+								for (ic = 0; ic < _col; ic++)
+									tmp[ir * _col + ic] = m.dat[ir * _col + ic];
+							delete[] dat;
+							dat = tmp;
+							} else
+							{								// Fallita allocazione
+							_row = _col = 0;
+							throw std::runtime_error(MatrixDef::ERR_ALLOC);
+							}
+						} else
+						{									// Matrice vuota
+						_row = _col = 0;
+						dat = (DATA*)nullptr;
+						}
+					}
+				#ifdef _DEBUG
+				cout << "Matrix::&operator=()" << endl;
+				#endif
+				return *this;
 				}
 			// Trasposta
 			Matrix<DATA> &operator!() requires RQassign<DATA>
@@ -1244,33 +1206,6 @@ namespace matrix
 					tmp->dat[irc * sz + irc] = (DATA)1;
 				return *tmp;
 				}
-			void setId(int sz) requires RQsumdifprod<DATA>
-			{
-				if (sz <= 0)
-				{
-					throw std::runtime_error(MatrixDef::ERR_WRONGPARAM);
-				}
-				clear();
-				_row = _col = sz;
-				dat = new DATA[sz * sz];
-				if (!dat)
-				{
-					_row = _col = 0;
-					throw std::runtime_error(MatrixDef::ERR_ALLOC);
-				}
-				else
-				{
-					for (int ir = 0; ir < _row; ir++)
-						for (int ic = 0; ic < _col; ic++)
-						{
-							dat[ir * _col + ic] = (ir == ic) ? (DATA)1 : (DATA)0;
-						}
-				}
-
-#ifdef _DEBUG
-			cout << "setId(int sz)" << endl;
-#endif
-			}
 			// Friend Iterator
 			friend MatrixIterator<DATA>;
 			int get_iterators_num()
@@ -1279,22 +1214,21 @@ namespace matrix
 				}
 		};
 
-	template <typename DATA> DATA *Matrix<DATA>::_empty = new DATA;			// Costruttore di default di DATA. Deallocato a fine programma.
-	template <typename DATA> size_t Matrix<DATA>::_datasize = sizeof(*_empty);	// Dimensione di DATA
+	template <class DATA> DATA *Matrix<DATA>::_empty = new DATA;			// Costruttore di default di DATA. Deallocato a fine programma.
+	template <class DATA> size_t Matrix<DATA>::_datasize = sizeof(*_empty);	// Dimensione di DATA
 
 
 	namespace linearsys		// nested
 		{
-		template <typename DATA, class MOD> class LinearSys
+		template <class DATA, class MOD> class LinearSys
 			{
 			private:
 				Matrix<DATA> a;				// Matrice fattorizzata
 				Matrix<int> pivot;			// Vettore di pivot
-				//const MOD EPS = std::numeric_limits<MOD>::epsilon();	// Superfluo. Usare std::numeric_limits<> all'interno delle funzioni (con controllo di requires<>).
-				//const MOD MINV = std::numeric_limits<MOD>::min();		// Errore, probabilmente rif. ambiguo.
 
 				MOD _epszero;				// Valore minimo considerato > 0
 				MOD _det;					// Determinante
+				MOD _max;					// Valore massimo				
 
 			public:
 
@@ -1303,8 +1237,10 @@ namespace matrix
 					{
 					_epszero = std::numeric_limits<MOD>::epsilon();
 					_det = (MOD)0;
+					_max = std::numeric_limits<MOD>::max();
+
 					#ifdef _DEBUG		
-					cout << "LinearSys(): epsilon=" << _epszero << endl;
+					cout << "LinearSys():"  << endl << "epsilon=" << _epszero << endl << "max=" << _max << endl;
 					#endif
 					}
 
@@ -1333,6 +1269,7 @@ namespace matrix
 					{
 					stringstream ss;
 					ss << "Eps_zero=" << _epszero << endl;
+					ss << "max=" << _max << endl;
 					ss << "Det=" << _det << endl;
 					ss << "PLU=" << a.to_string() << endl;
 					ss << "Pivot=" << pivot.to_string() << endl;

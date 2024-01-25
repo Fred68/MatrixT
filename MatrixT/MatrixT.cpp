@@ -58,7 +58,7 @@ int main()
 		cout << "xpip:\t" << xpip << endl;
 
 		(*P2)(1, 0) = Pippo(-8);
-		cout << "P2:\n" << P2 << "\tRighe: " << P2->rows() << "\tColonne: " << P2->cols() << endl;
+		cout << "P2:\n" << P2->to_string() << "\tRighe: " << P2->rows() << "\tColonne: " << P2->cols() << endl;
 		cout << "P2:\n" << P2->to_string(MatrixDef::Cmd::size) << endl;
 		cout << "P2:\n" << P2->to_string(MatrixDef::Cmd::detail) << endl;
 
