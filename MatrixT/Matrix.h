@@ -33,11 +33,10 @@ using std::numeric_limits;
 using std::vector;
 using std::stringstream;
 using std::endl;
+using std::ostream;
 
 #ifdef _DEBUG
 using std::cout;
-
-using std::ostream;
 #endif
 
 
@@ -49,6 +48,9 @@ namespace matrix
 	class MatrixDef;
 	template<typename DATA> class Matrix;
 	template<typename DATA> class MatrixIterator;	/* Prototyping della classe generica che deve essere friend */
+
+	template<typename U> ostream& operator<<(ostream& ostr, Matrix<U>& m);
+	template<typename U> ostream& operator<<(ostream& ostr, const Matrix<U>& m);
 
 	#pragma endregion
 
@@ -156,7 +158,8 @@ namespace matrix
 				return _m->dat + ir * _m->_col + ic;
 				}
 		};
-		
+	/********************************************************/
+
 	template<typename DATA> class Matrix
 		{
 		private:
@@ -263,7 +266,7 @@ namespace matrix
 				cout << "Matrix(int rows, int cols, DATA d)" << endl;
 #endif
 			}
-			/* Copy ctor */
+			/* Copy & move ctor */
 			Matrix(const Matrix& m) requires RQassign<DATA> : _row{m._row}, _col{m._col}, _iterators{0}
 			{
 				if ((_row > 0) && (_col > 0))
@@ -292,7 +295,6 @@ namespace matrix
 				cout << "Matrix(const Matrix& m)" << endl;
 #endif
 			}
-			/* Move ctor */
 			Matrix(Matrix&& m) : _row{m._row}, _col{m._col}, dat{m.dat}, _iterators{0}
 			{
 				m.dat = nullptr;
@@ -302,7 +304,7 @@ namespace matrix
 				cout << "Matrix(Matrix&& m)" << endl;
 #endif
 			}
-			// Copy assignment
+			// Copy and move assignment
 			Matrix<DATA> &operator=(const Matrix<DATA> &m) requires RQassign<DATA>
 			{
 				if (this != &m)
@@ -339,7 +341,6 @@ namespace matrix
 #endif
 				return *this;
 			}
-			/* Move assignment */
 			Matrix<DATA> &operator=(Matrix<DATA> &&m)
 			{
 				if(this != &m)
@@ -1277,11 +1278,24 @@ namespace matrix
 				{
 				return _iterators;
 				}
+			// Friend ostream operators
+			template<typename DATA> friend ostream& operator<<(ostream& os, Matrix<DATA>& m);
+			template<typename DATA> friend ostream& operator<<(ostream& os, const Matrix<DATA>& m);
 		};
 
-	template <typename DATA> DATA *Matrix<DATA>::_empty = new DATA;			// Costruttore di default di DATA. Deallocato a fine programma.
+	template <typename DATA> DATA *Matrix<DATA>::_empty = new DATA;				// Costruttore di default di DATA. Deallocato a fine programma.
 	template <typename DATA> size_t Matrix<DATA>::_datasize = sizeof(*_empty);	// Dimensione di DATA
 
+	template<typename U> ostream& operator<<(ostream& ostr, Matrix<U>& m)
+		{
+		ostr << m.to_string();
+		return ostr;
+		}
+	template<typename U> ostream& operator<<(ostream& ostr, const Matrix<U>& m)
+	{
+		ostr << m.to_string();
+		return ostr;
+	}
 
 	namespace linearsys		// nested
 		{
