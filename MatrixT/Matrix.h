@@ -21,9 +21,9 @@
 #include <cmath>
 #include <cstddef>
 
+// #define SPECIALITERATOR
+
 // #include <type_traits>	// Per complex
-
-
 using std::swap;
 using std::string;
 using std::runtime_error;
@@ -38,6 +38,8 @@ using std::ostream;
 #ifdef _DEBUG
 using std::cout;
 #endif
+
+
 
 
 namespace matrix
@@ -98,8 +100,11 @@ namespace matrix
 			inline static const string ERR_PIVOT = "Wrong pivot";
 	};
 
+
+	#ifdef SPECIALITERATOR
 	/********************************************************/
-	// PARTE DA RIVEDERE SECONDO GLI STANDARD
+	// PARTE RIFATTA CON SEMPLICE ITERATORE STANDARD
+	/********************************************************/
 	template<typename DATA> class MatrixIterator
 		{
 		private:
@@ -158,6 +163,7 @@ namespace matrix
 				return _m->dat + ir * _m->_col + ic;
 				}
 		};
+	#endif	
 	/********************************************************/
 
 	template<typename DATA> class Matrix
@@ -167,16 +173,32 @@ namespace matrix
 			int _col;							// ...e colonne
 			DATA *dat;							// Puntatore ai dati
 			static DATA *_empty;				// Dato vuoto
+			#ifdef SPECIALITERATOR
 			int _iterators;						// Numero di iteratori
+			#endif
 			static size_t _datasize;			// DATA size
-
 		public:
+			struct iterator
+			{
+				using iterator_category = std::forward_iterator_tag;	// ->> Da rivedere con sintassi C++20
+				explicit iterator(DATA* ptr) : _ptr{ ptr } {}
+				DATA& operator*() const { return *_ptr; }
+				DATA* operator->() const { return _ptr; }
+				iterator& operator++() { _ptr++; return *this; }
+				iterator operator++(int) { iterator tmp = *this; _ptr++; return tmp; }
+				friend bool operator!= (const iterator& a, const iterator& b) { return a._ptr != b._ptr; };
+			private:
+				DATA* _ptr;
+			};
+
 			/* Ctor */
 			Matrix()
 			{
 				_row = _col = 0;
 				dat = (DATA*)nullptr;
+				#ifdef SPECIALITERATOR
 				_iterators = 0;
+				#endif
 #ifdef _DEBUG
 				cout << "Matrix()" << endl;
 #endif
@@ -199,7 +221,9 @@ namespace matrix
 					_row = _col = 0;
 					dat = (DATA*)nullptr;
 				}
+				#ifdef SPECIALITERATOR
 				_iterators = 0;
+				#endif
 #ifdef _DEBUG
 				cout << "Matrix(int rows, int cols)" << endl;
 #endif
@@ -230,7 +254,9 @@ namespace matrix
 					_row = _col = 0;
 					dat = (DATA*)nullptr;
 				}
+				#ifdef SPECIALITERATOR
 				_iterators = 0;
+				#endif
 #ifdef _DEBUG
 				cout << "Matrix(int rows, int cols, DATA d)" << endl;
 #endif
@@ -261,13 +287,18 @@ namespace matrix
 					_row = _col = 0;
 					dat = (DATA*)nullptr;
 				}
+#ifdef SPECIALITERATOR
 				_iterators = 0;
+#endif
 #ifdef _DEBUG
 				cout << "Matrix(int rows, int cols, DATA d)" << endl;
 #endif
 			}
 			/* Copy & move ctor */
-			Matrix(const Matrix& m) requires RQassign<DATA> : _row{m._row}, _col{m._col}, _iterators{0}
+			Matrix(const Matrix& m) requires RQassign<DATA> : _row{m._row}, _col{m._col}
+			#ifdef SPECIALITERATOR
+			,_iterators{0}
+			#endif
 			{
 				if ((_row > 0) && (_col > 0))
 				{
@@ -295,7 +326,11 @@ namespace matrix
 				cout << "Matrix(const Matrix& m)" << endl;
 #endif
 			}
-			Matrix(Matrix&& m) : _row{m._row}, _col{m._col}, dat{m.dat}, _iterators{0}
+			Matrix(Matrix&& m) : _row{m._row}, _col{m._col}, dat{m.dat}
+#ifdef SPECIALITERATOR
+			, _iterators{ 0 }
+#endif
+
 			{
 				m.dat = nullptr;
 				m._row = m._col = 0;
@@ -347,7 +382,9 @@ namespace matrix
 				{
 					_col = m._col;
 					_row = m._row;
+					#ifdef SPECIALITERATOR
 					_iterators = m-_iterators;
+					#endif
 					dat = m.dat;
 					m.dat = nullptr;
 					m._row = m._col = 0;
@@ -365,6 +402,7 @@ namespace matrix
 				{
 					delete[] dat;
 				}
+#ifdef SPECIALITERATOR
 				if (_iterators > 0)
 				{
 					// throw std::runtime_error(MatrixDef::ERR_ALLOC);	// Non interrompere un distruttore.
@@ -372,6 +410,7 @@ namespace matrix
 					cout << "~Matrix() with pending " << _iterators << " iterators." << endl;
 #endif
 				}
+#endif // SPECIALITERATOR
 #ifdef _DEBUG
 				cout << "~Matrix()" << endl;
 #endif
@@ -625,7 +664,11 @@ namespace matrix
 					ss << "R" << _row << " x C" << _col;
 					break;
 					case MatrixDef::Cmd::detail:
-					ss << "R" << _row << "xC" << _col << ",iters=" << _iterators << ",dtsz=" << _datasize << ",empty=" << *_empty;
+					ss << "R" << _row << "xC" << _col;
+#ifdef SPECIALITERATOR
+					ss << ",iters=" << _iterators;
+#endif
+					ss << ",dtsz=" << _datasize << ",empty=" << *_empty;
 					break;
 					default:
 					break;
@@ -1273,11 +1316,16 @@ namespace matrix
 #endif
 			}
 			// Friend Iterator
+			#ifdef SPECIALITERATOR
 			friend MatrixIterator<DATA>;
 			int get_iterators_num()
 				{
 				return _iterators;
 				}
+			#endif
+			iterator begin() noexcept { return iterator(dat); }
+			iterator end() noexcept { return iterator(dat+(_row*_col)); }
+
 			// Friend ostream operators
 			template<typename DATA> friend ostream& operator<<(ostream& os, Matrix<DATA>& m);
 			template<typename DATA> friend ostream& operator<<(ostream& os, const Matrix<DATA>& m);

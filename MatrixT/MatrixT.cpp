@@ -29,7 +29,8 @@ using std::string;
 #pragma endregion
 
 // Prototyping
-void stop_msg();
+void msg(string ms = "");
+
 static int ramdomint(int i, int j);
 static int ramdomint10(int i, int j);
 static std::complex<double> cpxrc(int r, int c);
@@ -185,13 +186,23 @@ int main()
 
 
 		{
+		#ifdef SPECIALITERATOR
 		MatrixIterator<int> it(pr1);
 		cout << "\npr1=\n" << pr1.to_string(MatrixDef::Cmd::detail) << endl;
 		for (int *x = it.begin(); x != nullptr; x = it.next())
 			{
 			cout << *x << " " << *it.peek() << '\t';
 			}
+		#endif
+		cout << endl << "forward iterator for(auto x : pr1)" << endl;
+		for(auto x : pr1)
+		{
+			cout << x << " ";
+			msg();
 		}
+		msg("<continua...>");
+		}
+
 		// Float 80 bit non supportato: long double => double in MS C++
 		// __float128 bit forse supportato
 
@@ -327,16 +338,17 @@ int main()
 	catch (const std::runtime_error ex)
 		{
 		cout << ex.what();
-		stop_msg();
+		msg("<enter> per chiudere");
 		exit(1);
 		}
 
-		stop_msg();
+		msg("<enter> per chiudere");
 	}
 
-void stop_msg()
+void msg(string ms)
 	{
-	cout << endl << "<enter> per chiudere" << endl;
+	//cout << endl << "<enter> per chiudere" << endl;
+	cout << endl << ms << endl;
 	char tempchar = getchar();
 	}
 
